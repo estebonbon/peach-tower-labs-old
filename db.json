@@ -39,25 +39,6 @@
       "previousNcrNumber": "N/A"
     },
     {
-      "id": "3",
-      "ncrNumber": "2022-001",
-      "dateCreated": "2022-05-09",
-      "employeeId": "1",
-      "supplier": "Precision Fastener Supply",
-      "productId": "309724",
-      "itemDescription": "M12 x 40 mm hex bolt",
-      "processApplicable": "supplier-rec-insp",
-      "poOrProdNum": "PO-45903",
-      "salesOrderNumber": "SO-78301",
-      "defectDescription": "Ten bolts measure 35 mm instead of 40 mm.",
-      "quantityReceived": "50",
-      "quantityDefective": "10",
-      "itemMarkedNonconforming": "yes",
-      "engineeringRequired": "yes",
-      "status": "Closed",
-      "previousNcrNumber": "N/A"
-    },
-    {
       "id": "4",
       "ncrNumber": "2022-002",
       "dateCreated": "2022-10-17",
@@ -285,6 +266,26 @@
       "status": "Archived",
       "archivedDate": "2026-04-02",
       "archiveReason": "Weld defects were repaired and approved following reinspection."
+    },
+    {
+      "id": "G_KhFl3X_UQ",
+      "ncrNumber": "2022-001",
+      "dateCreated": "2022-05-09",
+      "employeeId": "1",
+      "supplier": "Precision Fastener Supply",
+      "productId": "309724",
+      "itemDescription": "M12 x 40 mm hex bolt",
+      "processApplicable": "supplier-rec-insp",
+      "poOrProdNum": "PO-45903",
+      "salesOrderNumber": "SO-78301",
+      "defectDescription": "Ten bolts measure 35 mm instead of 40 mm.",
+      "quantityReceived": "50",
+      "quantityDefective": "10",
+      "itemMarkedNonconforming": "yes",
+      "engineeringRequired": "yes",
+      "status": "Archived",
+      "previousNcrNumber": "N/A",
+      "archivedDate": "2026-11-06"
     }
   ],
   "drafts": [],
@@ -299,11 +300,10 @@
       "firstName": "Sarah",
       "lastName": "Johnson"
     },
-    {
+       {
       "id": "3",
       "firstName": "Michael",
       "lastName": "Brown"
     }
-  ],
-  "$schema": "./node_modules/json-server/schema.json"
+  ]
 }

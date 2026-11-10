@@ -4,36 +4,113 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NCR Log</title>
-     <meta name="description" content="Edit an existing Non-Conformance Report">
+    <meta name="description" content="View and manage Non-Conformance Reports">
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+    .ncr-log-table {
+        width: 100%;
+        table-layout: auto !important;
+    }
+
+    .ncr-log-table th,
+    .ncr-log-table td {
+        width: auto !important;
+        padding: 16px 12px;
+        overflow-wrap: normal;
+        word-break: normal;
+    }
+
+    .ncr-log-table th,
+    .ncr-log-table td:first-child,
+    .ncr-log-table td:nth-child(3),
+    .ncr-log-table td:nth-child(4) {
+        white-space: nowrap;
+    }
+
+    .ncr-log-table td:nth-child(2) {
+        overflow-wrap: anywhere;
+    }
+
+    .ncr-log-table .action-buttons {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start !important;
+        gap: 8px;
+    }
+
+    .ncr-log-table .btn-primary,
+    .ncr-log-table .btn-secondary {
+    width: 100px;
+    min-width: 100px;
+    height: 46px;
+    padding: 10px 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    flex: 0 0 100px;
+}
+
+    .ncr-log-table .btn-primary {
+        background-color: #193b59;
+        border-color: #193b59;
+        color: white;
+    }
+
+    .ncr-log-table .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        color: white;
+    }
+</style>
 </head>
 <body>
     <div class="sidebar">
         <div class="logo">
             <img src="images/crossfire Logo.png" alt="CrossFire Canada Logo">
+
             <div class="crossfire-info">
                 <h2>CrossFire Canada</h2>
                 <p>Non-Conformance Report System</p>
             </div>
         </div>
+
         <nav>
             <ul>
-                <li><a href="index.html"><i class="fas fa-home"></i>Home</a></li>
-                <li><a href="#" class="active" aria-current="page"><i class="fas fa-file-alt"></i>NCR Log</a></li>
-                <li><a href="create.html"><i class="fas fa-plus-circle"></i>Create NCR</a></li>
-                <li><a href="archive.html"><i class="fas fa-archive"></i>Archive</a></li>
+                <li>
+                    <a href="index.html">
+                        <i class="fas fa-home" aria-hidden="true"></i>Home
+                    </a>
+                </li>
+                <li>
+                    <a href="ncr-log.html" class="active" aria-current="page">
+                        <i class="fas fa-file-alt" aria-hidden="true"></i>NCR Log
+                    </a>
+                </li>
+                <li>
+                    <a href="create.html">
+                        <i class="fas fa-plus-circle" aria-hidden="true"></i>Create NCR
+                    </a>
+                </li>
+                <li>
+                    <a href="archive.html">
+                        <i class="fas fa-archive" aria-hidden="true"></i>Archive
+                    </a>
+                </li>
             </ul>
         </nav>
     </div>
-    
+
     <main class="content status-page">
-          <div class="row justify-content-center">
-            <div class="col-12 "> <!--col-lg-10-->
+        <div class="row justify-content-center">
+            <div class="col-12">
                 <section class="card border-0 shadow-sm">
                     <div class="card-body p-4 p-md-5">
                         <header class="form-header mb-4">
@@ -41,103 +118,115 @@
                                 <span class="header-extra">QUALITY MANAGEMENT NCR</span>
                                 <h1 class="h2 mb-2">NCR Log</h1>
                                 <p class="text-secondary mb-0">
-                                     View current and completed NCRs, reserve the next
+                                    View current and completed NCRs, reserve the next
                                     available NCR number, or update an existing report.
                                 </p>
                             </div>
-                        </header> 
-    
-            <!-- <div class="alert alert-info" role="status">
-                <strong>Next available NCR number:</strong>
-                <span id="next-ncr-number">2026-004</span>
-            </div>> -->
+                        </header>
 
-            <div class="mb-4">
-                <label for="ncrSearch" class="form-label">
-                    Search by NCR Number
-                </label>
-            
-                <input
-                    type="search"
-                    id="ncrSearch"
-                    class="form-control"
-                    placeholder="Search NCR number, e.g. 2026-011"
-                >
+                        <div class="mb-4">
+                            <label for="ncrSearch" class="form-label">
+    Search NCRs
+</label>
+
+<input
+    type="search"
+    id="ncrSearch"
+    class="form-control"
+    placeholder="Search by NCR number, supplier, product, or SAP number"
+>
+                        </div>
+
+                        <div class="d-flex flex-row align-items-center gap-4 mb-3 flex-nowrap">
+                            <div class="form-check mb-0">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="activeOnly"
+                                >
+                                <label class="form-check-label" for="activeOnly">
+                                    Show Active
+                                </label>
+                            </div>
+
+                            <div class="form-check mb-0">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="closedOnly"
+                                >
+                                <label class="form-check-label" for="closedOnly">
+                                    Show Closed
+                                </label>
+                            </div>
+
+                            <div class="form-check mb-0">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="engineeringOnly"
+                                >
+                                <label class="form-check-label" for="engineeringOnly">
+                                    Engineering Required
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table
+                                class="table ncr-log-table align-middle"
+                                style="table-layout: fixed; width: 100%;"
+                            >
+                                <thead>
+                                    <tr>
+                                        <th scope="col" style="width: 15%;">NCR Number</th>
+                                        <th scope="col" style="width: 27%;">Supplier</th>
+                                        <th scope="col" style="width: 17%;">Date Created</th>
+                                        <th scope="col" style="width: 11%;">Status</th>
+                                        <th scope="col" style="width: 30%;">Actions</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="ncr-table-body"></tbody>
+                            </table>
+                        </div>
+
+                        <p id="log-help" class="text-secondary">
+                            Select Details to review a report, Edit to update an
+                            active report, or Archive to move a closed report
+                            to the Archive page.
+                        </p>
+                    </div>
+                </section>
             </div>
-
-            <div class="d-flex flex-row align-items-center gap-4 mb-3 flex-nowrap">
-
-                <div class="form-check mb-0">
-                    <input class="form-check-input" type="checkbox" id="activeOnly">
-                    <label class="form-check-label" for="activeOnly">Show Active </label>
-                </div>
-            
-                <div class="form-check mb-0">
-                    <input class="form-check-input" type="checkbox" id="closedOnly">
-                    <label class="form-check-label" for="closedOnly">Show Closed </label>
-                </div>
-            
-                <div class="form-check mb-0">
-                    <input class="form-check-input" type="checkbox" id="engineeringOnly">
-                    <label class="form-check-label" for="engineeringOnly">Engineering Required</label>
-                </div>
-            
-            </div>
-
-            <div class="table-responsive">
-                <table class="table ncr-log-table align-middle" style="table-layout: fixed; width: 100%;">
-                
-                    <thead>
-                        <tr>
-                            <th scope="col" style="width: 15%;">NCR Number</th>
-                            <th scope="col" style="width: 27%;">Supplier</th>
-                            <th scope="col" style="width: 17%;">Date Created</th>
-                            <th scope="col" style="width: 11%;">Status</th>
-                            <th scope="col" style="width: 30%;">Actions</th>
-                        </tr>
-                    </thead>
-                
-                    <tbody id="ncr-table-body">
-                        <!-- JavaScript will insert NCR records here -->
-                    </tbody>
-                
-                </table>
-            </div>
-
-            <p id="log-help" class="text-secondary">
-                Select Details to review a report or Edit to update its
-                Quality Inspector information.
-            </p>
-
-        </section>
-            </div>
+        </div>
     </main>
-<script type="module" src="/status.js"></script>
+
+    <div
+        class="toast-container position-fixed bottom-0 end-0 p-3"
+        aria-live="polite"
+        aria-atomic="true"
+    >
+        <div
+            id="ncrToast"
+            class="toast border-0"
+            role="status"
+            aria-atomic="true"
+        >
+            <div class="d-flex">
+                <div id="ncrToastMessage" class="toast-body"></div>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white me-2 m-auto"
+                    data-bs-dismiss="toast"
+                    aria-label="Close notification"
+                ></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="/status.js"></script>
 </body>
 </html>
-
-<style scoped>
-    /* Edit button */
-    .ncr-log-table .btn-primary {
-        background-color: #193b59;
-        border-color: #193b59;
-        color: white;
-    }
-
-    /* Details button */
-    .ncr-log-table .btn-secondary {
-        background-color: #6c757d;
-        border-color: #6c757d;
-        color: white;
-    }
-
-    /* NCR Log action buttons */
-    .ncr-log-table .btn-primary,
-    .ncr-log-table .btn-secondary {
-        width: 110px;
-        min-width: 110px;
-        padding: 10px 12px;
-        text-align: center;
-        flex: none;
-    }
-</style>
