@@ -7,6 +7,117 @@ const ncr = ref(null);
 const employee = ref(null);
 const loading = ref(true);
 const error = ref('');
+const engineeringDraft = ref({});
+const savingEngineering = ref(false);
+const engineeringMessage = ref('');
+const engineeringSaveError = ref('');
+const engineeringKeys = [
+    'engineeringDecision', 'customerNotificationRequired',
+    'customerNotificationMessage', 'engineeringDisposition',
+    'drawingUpdateRequired', 'originalRevisionNumber',
+    'updatedRevisionNumber', 'engineerName', 'revisionDate',
+    'engineeringSignOff', 'engineeringSignOffDate', 'engineeringNotes'
+];
+
+// Temporary view selector until login roles are available.
+const selectedView = ref('inspector');
+const isEngineerView = computed(() => selectedView.value === 'engineer');
+const engineeringRequired = computed(() =>
+    ncr.value?.engineeringRequired === true ||
+    String(ncr.value?.engineeringRequired).toLowerCase() === 'yes'
+);
+const isReadOnly = computed(() =>
+    isArchived || ['closed', 'complete', 'completed', 'archived'].includes(
+        String(ncr.value?.status ?? '').trim().toLowerCase()
+    )
+);
+const canEdit = computed(() =>
+    !isReadOnly.value && (!isEngineerView.value || engineeringRequired.value)
+);
+
+const canEditEngineering = computed(() =>
+    isEngineerView.value && engineeringRequired.value && !isReadOnly.value
+);
+const engineeringSource = computed(() =>
+    canEditEngineering.value ? engineeringDraft.value : (ncr.value ?? {})
+);
+const engineeringDirty = computed(() => engineeringKeys.some(key =>
+    engineeringDraft.value[key] !== (ncr.value?.[key] ?? '')
+));
+
+function resetEngineeringDraft() {
+    engineeringDraft.value = Object.fromEntries(
+        engineeringKeys.map(key => [key, ncr.value?.[key] ?? ''])
+    );
+    engineeringMessage.value = '';
+    engineeringSaveError.value = '';
+}
+
+async function saveEngineering() {
+    if (!canEditEngineering.value || savingEngineering.value) return;
+    savingEngineering.value = true;
+    engineeringMessage.value = '';
+    engineeringSaveError.value = '';
+    // Only engineering properties are sent; QA fields and status are preserved.
+    const updates = Object.fromEntries(
+        engineeringKeys.map(key => [key, engineeringDraft.value[key] ?? ''])
+    );
+    try {
+        await axios.patch(
+            `http://localhost:3000/ncrForms/${encodeURIComponent(ncrId)}`,
+            updates
+        );
+        Object.assign(ncr.value, updates);
+        resetEngineeringDraft();
+        engineeringMessage.value = 'Engineering details saved successfully.';
+    } catch (err) {
+        console.error('Failed to save engineering details:', err);
+        engineeringSaveError.value = 'Unable to save engineering details. Your changes are still in the form; please try again.';
+    } finally {
+        savingEngineering.value = false;
+    }
+}
+
+// Field names must match the engineering edit form.
+// The review decision and work instructions are separate fields.
+const engineeringFields = computed(() => {
+    const decision = String(engineeringSource.value?.engineeringDecision ?? '')
+        .trim().toLowerCase().replace(/[-_]/g, ' ');
+    const repairOrRework = ['repair', 'rework'].includes(decision);
+    const customerNotification = displayYesNo(
+        engineeringSource.value?.customerNotificationRequired
+    ) === 'Yes';
+    const drawingUpdate = displayYesNo(
+        engineeringSource.value?.drawingUpdateRequired
+    ) === 'Yes';
+
+    return [
+        { key: 'engineeringDecision', label: 'Engineering Decision (Use As Is / Repair / Rework / Scrap)' },
+        { key: 'customerNotificationRequired', label: 'Customer Notification Required?', yesNo: true },
+        { key: 'customerNotificationMessage', label: 'Customer Notification Message', show: customerNotification, wide: true },
+        { key: 'engineeringDisposition', label: 'Disposition — Repair / Rework Instructions', show: repairOrRework, wide: true },
+        { key: 'drawingUpdateRequired', label: 'Drawing Update Required?', yesNo: true },
+        { key: 'originalRevisionNumber', label: 'Original Revision Number', show: drawingUpdate },
+        { key: 'updatedRevisionNumber', label: 'Updated Revision Number', show: drawingUpdate },
+        { key: 'engineerName', label: 'Name of Engineer' },
+        { key: 'revisionDate', label: 'Revision Date', show: drawingUpdate },
+        { key: 'engineeringSignOff', label: 'Engineering Sign-off' },
+        { key: 'engineeringSignOffDate', label: 'Engineering Sign-off Date' },
+        // Preserve notes from the earlier version when a record contains them.
+        { key: 'engineeringNotes', label: 'Additional Engineering Notes', wide: true }
+    ];
+});
+
+const visibleEngineeringFields = computed(() =>
+    engineeringFields.value.filter(field => field.show !== false)
+);
+
+const hasEngineeringDetails = computed(() =>
+    engineeringFields.value.some(({ key }) => {
+        const value = ncr.value?.[key];
+        return value != null && String(value).trim() !== '' && value !== 'N/A';
+    })
+);
 
 const urlParams = new URLSearchParams(window.location.search);
 const ncrId = urlParams.get('id');
@@ -26,6 +137,7 @@ async function getNCRDetails() {
         const response = await axios.get(`http://localhost:3000/${collection}/${ncrId}`);
 
         ncr.value = response.data;
+        resetEngineeringDraft();
 
         // Find the employee associated with this NCR
         if (ncr.value.employeeId) {
@@ -100,7 +212,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <main>
+    <main class="content">
         <div class="row justify-content-center">
             <div class="col-12">
                 <section>
@@ -133,6 +245,31 @@ onMounted(() => {
                         </div>
 
                         <template v-else-if="ncr">
+
+                            <!-- Display preview only; login will supply the actual role. -->
+                            <div class="mb-4">
+                                <p id="role-view-label" class="fw-semibold mb-2">View report as:</p>
+                                <div class="d-flex flex-wrap gap-2" role="group" aria-labelledby="role-view-label">
+                                    <button
+                                        v-for="role in [{ value: 'inspector', label: 'Quality Inspector' }, { value: 'engineer', label: 'Engineer' }]"
+                                        :key="role.value"
+                                        type="button"
+                                        class="btn"
+                                        :class="selectedView === role.value ? 'btn-primary' : 'btn-outline-primary'"
+                                        :aria-pressed="selectedView === role.value"
+                                        @click="selectedView = role.value"
+                                    >
+                                        {{ role.label }}
+                                    </button>
+                                </div>
+                                <p class="small text-secondary mt-2 mb-0">QA information is read-only. Engineer view allows engineering updates on open reports.</p>
+                            </div>
+                            <p v-if="engineeringDirty" class="text-warning" role="status">
+                                You have unsaved engineering changes. Switch back to Engineer view to save or cancel them before leaving this page.
+                            </p>
+                            <div v-if="isReadOnly" class="alert alert-info" role="status">
+                                This report is closed or archived and is available for viewing only.
+                            </div>
 
                             <!-- NCR number and status -->
                             <div class="report-summary mb-4">
@@ -265,7 +402,7 @@ onMounted(() => {
                                 </div>
                             </section>
 
-                            <!-- Engineering Review -->
+                            <!-- Review requirement remains visible to both roles. -->
                             <section class="detail-section">
                                 <h2 class="section-heading">Engineering Review</h2>
 
@@ -286,13 +423,63 @@ onMounted(() => {
                                 </div>
                             </section>
 
+                            <p v-if="!engineeringRequired" class="alert alert-info" role="status">
+                                {{ displayYesNo(ncr.engineeringRequired) === 'No'
+                                    ? 'Engineering review not required.'
+                                    : 'Engineering review requirement has not been recorded.' }}
+                            </p>
+
+                            <section v-else-if="isEngineerView" class="detail-section">
+                                <h2 class="section-heading">Engineering Details &amp; Sign-off</h2>
+                                <p v-if="!hasEngineeringDetails" class="text-secondary">
+                                    Engineering details and sign-off have not been recorded yet.
+                                </p>
+                                <form @submit.prevent="saveEngineering">
+                                    <fieldset :disabled="savingEngineering" class="border-0 p-0 m-0">
+                                        <div class="row g-4">
+                                            <div v-for="field in visibleEngineeringFields" :key="field.key" :class="field.wide ? 'col-12' : 'col-md-6'">
+                                                <template v-if="canEditEngineering">
+                                                    <label class="detail-label d-block" :for="`engineering-${field.key}`">{{ field.label }}</label>
+                                                    <select v-if="field.key === 'engineeringDecision'" :id="`engineering-${field.key}`" v-model="engineeringDraft[field.key]" class="form-select">
+                                                        <option value="">Select a decision</option>
+                                                        <option>Use As Is</option>
+                                                        <option>Repair</option>
+                                                        <option>Rework</option>
+                                                        <option>Scrap</option>
+                                                    </select>
+                                                    <select v-else-if="field.yesNo" :id="`engineering-${field.key}`" v-model="engineeringDraft[field.key]" class="form-select">
+                                                        <option value="">Select Yes or No</option>
+                                                        <option value="yes">Yes</option>
+                                                        <option value="no">No</option>
+                                                        <option v-if="typeof engineeringDraft[field.key] === 'boolean'" :value="engineeringDraft[field.key]">{{ displayYesNo(engineeringDraft[field.key]) }}</option>
+                                                    </select>
+                                                    <textarea v-else-if="field.wide" :id="`engineering-${field.key}`" v-model="engineeringDraft[field.key]" class="form-control" rows="4"></textarea>
+                                                    <input v-else :id="`engineering-${field.key}`" v-model="engineeringDraft[field.key]" :type="field.key === 'revisionDate' || field.key === 'engineeringSignOffDate' ? 'date' : 'text'" class="form-control">
+                                                </template>
+                                                <template v-else>
+                                                    <div class="detail-label">{{ field.label }}</div>
+                                                    <div class="detail-value engineering-value">{{ field.yesNo ? displayYesNo(ncr[field.key]) : displayValue(ncr[field.key]) }}</div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div v-if="canEditEngineering" class="d-flex flex-wrap gap-2 mt-4">
+                                            <button type="submit" class="btn btn-primary">{{ savingEngineering ? 'Saving…' : 'Save Engineering Details' }}</button>
+                                            <button type="button" class="btn btn-outline-secondary" @click="resetEngineeringDraft">Cancel Changes</button>
+                                        </div>
+                                    </fieldset>
+                                    <p v-if="canEditEngineering" class="small text-secondary mt-2">Saving records these fields, including the sign-off name and date. It does not change the workflow status or send notifications.</p>
+                                    <p v-if="engineeringMessage" class="alert alert-success mt-3" role="status">{{ engineeringMessage }}</p>
+                                    <p v-if="engineeringSaveError" class="alert alert-danger mt-3" role="alert">{{ engineeringSaveError }}</p>
+                                </form>
+                            </section>
+
                             <!-- Navigation Buttons -->
                             <div class="action-buttons d-flex flex-wrap gap-3 mt-4">
                                 <a :href="isArchived ? 'archive.html' : 'ncr-log.html'" class="btn btn-primary">
                                     {{ isArchived ? 'Back to Archives' : 'Back to NCR Log' }}
                                 </a>
 
-                                <a v-if="!isArchived" :href="`edit.html?id=${ncrId}`"class="btn btn-secondary">
+                                <a v-if="canEdit && !isEngineerView" :href="`edit.html?id=${encodeURIComponent(ncrId)}&amp;role=${selectedView}`" class="btn btn-secondary">
                                     Edit NCR
                                 </a>
                             </div>
@@ -311,11 +498,12 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.main {
+.engineering-value {
+    white-space: pre-wrap;
+}
+
+.content {
     background-color: white;
-    width: 100%;
-    min-height: 100vh;
-    box-sizing: border-box;
 }
 
 .form-header {
