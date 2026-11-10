@@ -108,6 +108,8 @@
         </nav>
     </div>
 
+    <div id="navbar-container"></div>
+    
     <main class="content status-page">
         <div class="row justify-content-center">
             <div class="col-12">
@@ -171,6 +173,54 @@
                                 </label>
                             </div>
                         </div>
+            <div class="d-flex flex-row align-items-center gap-4 mb-3 flex-rap ncr-log-filters">
+
+                <div class="form-check mb-0">
+                    <input class="form-check-input" type="checkbox" id="activeOnly">
+                    <label class="form-check-label" for="activeOnly">Show Active </label>
+                </div>
+            
+                <div class="form-check mb-0">
+                    <input class="form-check-input" type="checkbox" id="closedOnly">
+                    <label class="form-check-label" for="closedOnly">Show Closed </label>
+                </div>
+            
+                <div class="form-check mb-0">
+                    <input class="form-check-input" type="checkbox" id="engineeringOnly">
+                    <label class="form-check-label" for="engineeringOnly">Engineering Required</label>
+                </div>
+
+                <div class="stage-filter d-flex align-items-center gap-2">
+                    <label for="stageFilter" class="mb-0 fw-semibold">Stage</label>
+                        <select id="stageFilter" class="form-select">
+                                <option value="">All Stages</option>
+                                <option value="Quality Review">Quality Review</option>
+                                <option value="Engineering Review">Engineering Review</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                </div>  
+            
+            </div>
+
+            <div class="table-responsive">
+                <table class="table ncr-log-table align-middle" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width: 15%;">NCR Number</th>
+                            <th scope="col" style="width: 27%;">Supplier</th>
+                            <th scope="col" style="width: 17%;">Date Created</th>
+                            <th scope="col" style="width: 15%;">Status</th>
+                            <th scope="col" style="width: 20%;">Current Stage</th>
+                            <th scope="col" style="width: 25%;">Actions</th>
+                        </tr>
+                    </thead>
+                
+                    <tbody id="ncr-table-body">
+                        <!-- JavaScript will insert NCR records here -->
+                    </tbody>
+                
+                </table>
+            </div>
 
                         <div class="table-responsive">
                             <table
@@ -201,6 +251,10 @@
             </div>
         </div>
     </main>
+<script type="module" src="/status.js"></script>
+<script src="js/navbar.js"></script>
+</body>
+</html>
 
     <div
         class="toast-container position-fixed bottom-0 end-0 p-3"
@@ -230,3 +284,22 @@
     <script type="module" src="/status.js"></script>
 </body>
 </html>
+    /* NCR Log action buttons */
+    .ncr-log-table .btn-primary,
+    .ncr-log-table .btn-secondary {
+        width: 110px;
+        min-width: 110px;
+        padding: 10px 12px;
+        text-align: center;
+        flex: none;
+    }
+    .ncr-stage {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 6px;
+    background-color: #e8eef5;
+    color: #173451;
+    font-size: 13px;
+    font-weight: 600;
+}
+</style>

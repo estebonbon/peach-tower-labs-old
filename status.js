@@ -92,6 +92,34 @@ async function archiveNCR(ncr, button) {
                 ...ncr,
                 status: 'Archived',
                 archivedDate: new Date().toLocaleDateString('en-CA')
+        //Search feature
+        function filterNCRs() {
+            const searchValue = document.getElementById('ncrSearch').value.trim();
+            const activeChecked = document.getElementById('activeOnly').checked;
+            const closedChecked = document.getElementById('closedOnly').checked;
+            const engineeringChecked = document.getElementById('engineeringOnly').checked;
+            const stageFilter = document.getElementById('stageFilter').value;
+
+            response.data.forEach((ncr, index) => {
+                const row = tableBody.rows[index];
+            
+                const matchesSearch = ncr.ncrNumber.includes(searchValue);
+            
+                const matchesStatus =
+                    (!activeChecked && !closedChecked) ||
+                    (activeChecked && ncr.status === 'Active') ||
+                    (closedChecked && ncr.status === 'Closed');
+            
+                const matchesEngineering =
+                    !engineeringChecked || ncr.engineeringRequired === 'yes';
+                
+                const matchesStage =
+                    !stageFilter ||
+                    ncr.stage === stageFilter;
+                row.style.display =
+                    matchesSearch && matchesStatus && matchesEngineering &&matchesStage
+                        ? ''
+                        : 'none';
             });
         } else {
             const archivedRecord = existing.data[0];
@@ -109,6 +137,12 @@ async function archiveNCR(ncr, button) {
                 }
             );
         }
+        
+        document.getElementById('ncrSearch').addEventListener('input', filterNCRs);
+        document.getElementById('activeOnly').addEventListener('change', filterNCRs);
+        document.getElementById('closedOnly').addEventListener('change', filterNCRs);
+        document.getElementById('engineeringOnly').addEventListener('change', filterNCRs);
+        document.getElementById('stageFilter').addEventListener('change', filterNCRs);
 
         await axios.delete(
             `${apiUrl}/ncrForms/${encodeURIComponent(ncr.id)}`
@@ -231,6 +265,37 @@ async function getNCRs() {
             actionsCell.appendChild(actions);
             row.appendChild(actionsCell);
             fragment.appendChild(row);
+        
+            row.innerHTML = `
+                <td>${ncr.ncrNumber}</td>
+                <td>${ncr.supplier}</td>
+                <td>${ncr.dateCreated}</td>
+                <td>
+                    <span class="ncr-status ${ncr.status.toLowerCase()}">
+                        ${ncr.status}
+                    </span>
+                </td>
+                <td>
+                    <span class="ncr-stage">
+                        ${ncr.stage}
+                    </span>
+                </td>
+                <td>
+                    <div class="d-flex .action-buttons flex-nowrap justify-content-around align-items-center gap-2">
+                        <a href="details.html?id=${ncr.id}"
+                           class="btn btn-primary">
+                            Details
+                        </a>
+
+                        <a href="edit.html?id=${ncr.id}"
+                           class="btn btn-secondary">
+                            Edit
+                        </a>
+                    </div>
+                </td>
+            `;
+        
+            tableBody.appendChild(row);
         });
 
         ncrs = records;
