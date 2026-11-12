@@ -17,7 +17,19 @@
       "itemMarkedNonconforming": "yes",
       "engineeringRequired": "yes",
       "status": "Active",
-      "previousNcrNumber": "N/A"
+      "previousNcrNumber": "N/A",
+      "engineeringDecision": "",
+      "customerNotificationRequired": "",
+      "customerNotificationMessage": "",
+      "engineeringDisposition": "",
+      "drawingUpdateRequired": "",
+      "originalRevisionNumber": "",
+      "updatedRevisionNumber": "",
+      "engineerName": "",
+      "revisionDate": "",
+      "engineeringSignOff": "",
+      "engineeringSignOffDate": "",
+      "engineeringNotes": ""
     },
     {
       "id": "2",
