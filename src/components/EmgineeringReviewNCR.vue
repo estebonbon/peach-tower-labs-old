@@ -1060,8 +1060,7 @@ function cancelReview() {
                                 aria-live="polite"
                             ></p>
 
-                            <div class="action-buttons d-flex flex-wrap gap-3 mt-4">
-                                
+                            <div class="action-buttons d-flex flex-wrap gap-3 mt-4">     
                                 <button type="submit" class="btn btn-primary">
                                     Submit Review
                                 </button>
