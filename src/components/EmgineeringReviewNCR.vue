@@ -249,7 +249,7 @@ function cancelReview() {
 </script>
 
 <template>
-    <main class="content">
+    <main>
         <div class="row justify-content-center">
             <div class="col-12">
 
@@ -495,6 +495,64 @@ function cancelReview() {
                                     </small>
                                 </fieldset>
                             </fieldset>
+                             DISPOSITION INSTRUCTIONS
+                            <fieldset class="form-section">
+                                <legend class="section-title">
+                                    Disposition
+                                </legend>
+
+                                <label
+                                    for="dispositionInstructions"
+                                    class="form-label"
+                                >
+                                    Sequence of Work Steps
+
+                                    <span
+                                        v-if="repairOrReworkSelected"
+                                        class="required"
+                                    >
+                                        *
+                                    </span>
+
+                                    <span
+                                        v-else
+                                        class="optional"
+                                    >
+                                        (Required for Repair or Rework)
+                                    </span>
+                                </label>
+
+                                <textarea
+                                    id="dispositionInstructions"
+                                    v-model="
+                                        engineeringReview
+                                            .dispositionInstructions
+                                    "
+                                    class="form-control"
+                                    name="dispositionInstructions"
+                                    rows="7"
+                                    placeholder="
+                                        Enter the required repair or rework
+                                        steps
+                                    "
+                                    :aria-invalid="
+                                        Boolean(
+                                            errors.dispositionInstructions
+                                        )
+                                    "
+                                ></textarea>
+
+                                <small
+                                    v-if="
+                                        errors.dispositionInstructions
+                                    "
+                                    class="text-danger"
+                                >
+                                    {{
+                                        errors.dispositionInstructions
+                                    }}
+                                </small>
+                            </fieldset>
 
                             <!-- CUSTOMER NOTIFICATION -->
                             <fieldset class="form-section">
@@ -618,7 +676,7 @@ function cancelReview() {
                                 </div>
                             </fieldset>
 
-                            <!-- DISPOSITION INSTRUCTIONS -->
+                            <!-- DISPOSITION INSTRUCTIONS
                             <fieldset class="form-section">
                                 <legend class="section-title">
                                     Disposition
@@ -675,7 +733,7 @@ function cancelReview() {
                                         errors.dispositionInstructions
                                     }}
                                 </small>
-                            </fieldset>
+                            </fieldset> -->
 
                             <!-- DRAWING REVISION -->
                             <fieldset class="form-section">
@@ -1002,8 +1060,7 @@ function cancelReview() {
                                 aria-live="polite"
                             ></p>
 
-                            <div class="action-buttons d-flex flex-wrap gap-3 mt-4">
-                                
+                            <div class="action-buttons d-flex flex-wrap gap-3 mt-4">     
                                 <button type="submit" class="btn btn-primary">
                                     Submit Review
                                 </button>
@@ -1011,6 +1068,9 @@ function cancelReview() {
                                 <button type="button" class="btn btn-secondary" @click="cancelReview">
                                     Cancel
                                 </button>
+                                <button type="button" class="btn btn-secondary">
+                                    Save as Draft
+                                    </button>
 
                             </div>
                         </form>
@@ -1024,12 +1084,12 @@ function cancelReview() {
 </template>
 
 <style scoped>
-.content {
+.main {
   background-color: #fff;
 }
 
 .content .form-control,
-.content .form-select {
+.conten .form-select {
   background-color: #f3f4f6;
 }
 
