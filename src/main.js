@@ -1,43 +1,9 @@
-//Starts Vue and mounts the component
-import { createApp } from "vue";
-import Toast from 'vue-toastification';
-import 'vue-toastification/dist/index.css';
-import CreateNCR from "./components/CreateNCR.vue";
-import EditNCR from "./components/EditNCR.vue";
-import DetailsNCR from "./components/DetailsNCR.vue";
-import EmgineeringReviewNCR from "./components/EmgineeringReviewNCR.vue";
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
 
-// Check which page is open and mount the correct Vue component
-if (document.getElementById('CreatePage')) {
-    const app = createApp(CreateNCR);
-    app.use(Toast);
-    app.mount('#CreatePage');
-}
+const app = createApp(App)
 
-if (document.getElementById('EditPage')) {
-    const app = createApp(EditNCR);
-    app.use(Toast);
-    app.mount('#EditPage');
-}
+app.use(router)
 
-// NCR Details page
-if (document.getElementById('DetailsPage')) {
-    const app = createApp(DetailsNCR);
-    console.log("DETAILS PAGE FOUND!");
-    app.use(Toast);
-    app.mount('#DetailsPage');
-}
-
-//Archive Detials
-if (document.getElementById('ArchiveDetailsPage')) {
-    const app = createApp(DetailsNCR);
-    app.use(Toast);
-    app.mount('#ArchiveDetailsPage');
-}
-
-// Engineering Review
-if (document.getElementById('EngineeringReviewPage')) {
-    const app = createApp(EmgineeringReviewNCR);
-    app.use(Toast);
-    app.mount('#EngineeringReviewPage');
-}
+app.mount('#app')
